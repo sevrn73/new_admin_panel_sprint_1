@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS content.person_film_work (
     id uuid PRIMARY KEY,
     person_id uuid,
     film_work_id uuid,
-    role TEXT NOT NULL,
+    role TEXT,
     created timestamp with time zone
 );
 
