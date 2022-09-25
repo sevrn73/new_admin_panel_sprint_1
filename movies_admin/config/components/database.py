@@ -14,3 +14,5 @@ DATABASES = {
         'OPTIONS': {'options': '-c search_path=public,content'},
     }
 }
+
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000

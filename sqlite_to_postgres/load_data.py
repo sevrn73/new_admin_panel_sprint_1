@@ -16,9 +16,13 @@ def load_from_sqlite(connection: sqlite3.Connection, pg_conn: _connection):
     """Основной метод загрузки данных из SQLite в Postgres"""
     postgres_saver = PostgresSaver(pg_conn)
     sqlite_extractor = SQLiteExtractor(connection)
-
-    data = sqlite_extractor.extract()
-    postgres_saver.save_data(data)
+    try:
+        for table_name in ['film_work', 'genre', 'person', 'genre_film_work', 'person_film_work']:
+            data = sqlite_extractor.fetch_batch_data(table_name)
+            postgres_saver.inset_data(table_name, data)
+        postgres_saver.cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
 
 
 @contextmanager
@@ -37,5 +41,4 @@ if __name__ == '__main__':
         'port': int(os.environ.get('DB_PORT')),
     }
     with conn_context('db.sqlite') as sqlite_conn, psycopg2.connect(**dsl, cursor_factory=DictCursor) as pg_conn:
-        # sqlite3.connect('db.sqlite')
         load_from_sqlite(sqlite_conn, pg_conn)
