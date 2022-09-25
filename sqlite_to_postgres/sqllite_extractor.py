@@ -14,7 +14,7 @@ class SQLiteExtractor:
         }
         self.page_size = 1000
 
-    def get_rows(self) -> list:
+    def fetch_batch_data(self):
         columns = [data[0] for data in self.curs.description]
 
         modif_columns = {'created_at': 'created', 'updated_at': 'modified'}
@@ -22,21 +22,21 @@ class SQLiteExtractor:
             if col in columns:
                 columns[columns.index(col)] = modif_columns[col]
 
-        rows = []
         while True:
-            fetch_rows = self.curs.fetchmany(self.page_size)
+            fetch_rows = [dict(zip(columns, row)) for row in self.curs.fetchmany(self.page_size)]
             if fetch_rows:
-                rows.extend(fetch_rows)
+                yield fetch_rows
             else:
                 break
-
-        return [dict(zip(columns, row)) for row in rows]
 
     def get_table_data(self, dc: type, table_name) -> list:
         sql = f'SELECT * FROM {table_name};'
         self.curs.execute(sql)
+        table = []
+        for batch in self.fetch_batch_data():
+            table.extend([dc(**row) for row in batch])
 
-        return [dc(**row) for row in self.get_rows()]
+        return table
 
     def extract(self) -> dict:
         data = {}
