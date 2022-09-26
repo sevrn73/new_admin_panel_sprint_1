@@ -39,6 +39,9 @@ class GenreFilmwork(UUIDMixin):
 
     class Meta:
         db_table = 'content"."genre_film_work'
+        constraints = [
+            models.UniqueConstraint(fields=['genre_id', 'film_work_id'], name='unique_genre'),
+        ]
 
 
 class Person(UUIDMixin, TimeStampedMixin):
@@ -61,6 +64,9 @@ class PersonFilmwork(UUIDMixin):
 
     class Meta:
         db_table = 'content"."person_film_work'
+        indexes = [
+            models.Index(fields=['person_id', 'film_work_id']),
+        ]
 
 
 class Filmwork(UUIDMixin, TimeStampedMixin):
@@ -69,7 +75,9 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
     creation_date = models.DateTimeField(_('creation_date'), blank=True, null=True)
     certificate = models.CharField(_('certificate'), max_length=512, blank=True)
     file_path = models.FileField(_('file'), blank=True, null=True, upload_to='movies/')
-    rating = models.FloatField(_('rating'), validators=[MinValueValidator(0), MaxValueValidator(100)], blank=True, null=True)
+    rating = models.FloatField(
+        _('rating'), validators=[MinValueValidator(0), MaxValueValidator(100)], blank=True, null=True
+    )
     genres = models.ManyToManyField(Genre, through='GenreFilmwork')
     preson = models.ManyToManyField(Person, through='PersonFilmwork')
 
@@ -83,6 +91,9 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
         db_table = 'content"."film_work'
         verbose_name = _('Film_work')
         verbose_name_plural = _('Film_works')
+        indexes = [
+            models.Index(fields=['creation_date']),
+        ]
 
     def __str__(self):
         return f'{self.title} {self.creation_date} {self.rating}'

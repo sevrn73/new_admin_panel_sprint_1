@@ -4,16 +4,22 @@ from movies.models import Genre, Filmwork, Person, GenreFilmwork, PersonFilmwork
 
 class GenreFilmworkInline(admin.TabularInline):
     model = GenreFilmwork
+    autocomplete_fields = ('genre',)
 
 
 class PersonFilmworkkInline(admin.TabularInline):
     model = PersonFilmwork
+    autocomplete_fields = ('person',)
 
 
 @admin.register(Genre)
 class GenreAdmin(admin.ModelAdmin):
 
     list_display = (
+        'name',
+        'description',
+    )
+    search_fields = (
         'name',
         'description',
     )
@@ -39,3 +45,4 @@ class FilmworkAdmin(admin.ModelAdmin):
 class PersonAdmin(admin.ModelAdmin):
 
     list_display = ('full_name',)
+    search_fields = ('full_name',)

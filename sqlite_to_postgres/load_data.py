@@ -1,19 +1,24 @@
 import os
-import sqlite3
 from contextlib import contextmanager
+import logging
+import sqlite3
 import psycopg2
 from psycopg2.extensions import connection as _connection
 from psycopg2.extras import DictCursor
-from dc import *
+from dotenv import load_dotenv
 from postgres_saver import PostgresSaver
 from sqllite_extractor import SQLiteExtractor
-from dotenv import load_dotenv
 
 load_dotenv('../movies_admin/config/.env')
+logging.basicConfig(
+    filename='log.txt',
+)
+logger = logging.getLogger('loader')
 
 
 def load_from_sqlite(connection: sqlite3.Connection, pg_conn: _connection):
     """Основной метод загрузки данных из SQLite в Postgres"""
+    logger.info('start_loader')
     postgres_saver = PostgresSaver(pg_conn)
     sqlite_extractor = SQLiteExtractor(connection)
     try:
@@ -22,7 +27,7 @@ def load_from_sqlite(connection: sqlite3.Connection, pg_conn: _connection):
             postgres_saver.inset_data(table_name, data)
         postgres_saver.cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
+        logger.exception(error)
 
 
 @contextmanager
